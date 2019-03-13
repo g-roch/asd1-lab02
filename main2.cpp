@@ -1,3 +1,14 @@
+/**
+ * @file main.cpp
+ * @brief LABO 2: PUZZLE IMPOSSIBLE
+ * 
+ * Résoudre le jeu puzzle impossible
+ *
+ * @author Gwendoline Dössegger
+ * @author Quentin Saucy
+ * @author Gabriel Roch
+ * @date 2019-03-06 au 2019-03-13
+ */
 
 #include <iostream>
 #include <algorithm>
@@ -8,61 +19,112 @@
 #define DROITE 1
 #define BAS 2
 #define GAUCHE 3
-#define DETAILS false
+#define NB_FACE 4
+#define NB_COL 3
 
 using namespace std;
 
-ostream& operator <<(ostream& os, AttachementType rhs);
+/**
+ * @brief Afficher une piece (numéro + lettre)
+ * @example 4a
+ * @param os le flux de sortie
+ * @param rhs La piece à afficher
+ * @return le flux
+ */
 ostream& operator <<(ostream& os, const Piece& rhs);
+
+/**
+ * @brief Afficher une série de pièces
+ * @example 4a 1b 3d 7a …
+ * @param os le flux de sortie
+ * @param rhs Le vecteur de pieces à afficher
+ * @return le flux
+ */
 ostream& operator <<(ostream& os, const Pieces& rhs);
 
+/**
+ * @brief Compare deux pièces
+ * @param lhs Une pièce à comparer
+ * @param rhs Une deuxième pièce à comparer
+ * @retval true si c'est la même carte (à une rotation près)
+ * @retval false si ce n'est pas la même carte (à une rotation près)
+ */
 bool operator ==(const Piece& lhs, const Piece& rhs);
 
+/**
+ * @brief Tourne un pièce de 45°
+ * @param a La pièce à tourner
+ */
 void rotation(Piece& a);
 
-void resolve(Pieces plateau, Pieces jeux);
-void remove(Pieces& jeux, const Piece& piece);
+/**
+ * @brief Supprimer un carte d'un jeu de carte
+ * @param jeu Vecteur de pièce à modifier
+ * @param piece La pièce à supprimer du jeu
+ */
+void remove(Pieces& jeu, const Piece& piece);
 
+/**
+ * @brief Test si une piece peut rentrer dans la position suivante
+ * dans sur le plateau
+ * @param plateau Le plateau de jeu
+ * @param piece La pièce à insérer
+ * @note La piece est tournée pour tester la pièce, la rotation terminal est la
+ *    rotation permettant l'insertion, ou la rotation initiale.
+ * @retval true Si la pièce peux être insérée
+ */
 bool testPiece(const Pieces& plateau, Piece& piece);
+
+/**
+ * @brief Retourne l'image complémentaire de l'image fournie
+ * @param a L'image à inversé
+ * @return L'image complémentaire
+ */
 AttachementType complement(AttachementType a);
 
+/**
+ * @brief Résoud le jeux de manière récursive.
+ * @param plateau Le plateau de jeu actuelle
+ * @param deck Le deck comportant les pièces encore à poser
+ */
+void resolve(Pieces& plateau, Pieces deck);
+
 int main() {
-
-
    Pieces jeux(PIECES);
+   Pieces plateau;
 
    for(Piece piece: PIECES)
    {
-      for(int i = 0; i < 4; ++i)
+      Pieces deck(PIECES);
+      remove(deck, piece);
+      for(int i = 0; i < NB_FACE; ++i)
       {
-         Pieces jeux(PIECES);
-         remove(jeux, piece);
-         resolve({piece}, jeux);
+         plateau = {piece};
+         resolve(plateau, deck);
          rotation(piece);
       }
    }
-
    return EXIT_SUCCESS;
-
 }
 
-void resolve(Pieces plateau, Pieces deck)
+void resolve(Pieces& plateau, Pieces deck)
 {
-   //cout << plateau << endl;
-   if(deck.size() == 1)
+   if(deck.size() == 1) // s'il n'y a plus qu'une pièce
    {
       if(testPiece(plateau, deck.front()))
       {
          plateau.push_back(deck.front());
          cout << plateau << endl;
+         plateau.pop_back();
       }
       return;
    }
 
    for(Piece piece: deck)
    {
-      if(testPiece(plateau, piece))
-      {
+      if(testPiece(plateau, piece)) 
+      { // si la pièce rentre sur le plateau, elle est tournée correctement par testPiece.
+
          plateau.push_back(piece);
 
          Pieces nouveauJeux(deck);
@@ -80,10 +142,10 @@ bool testPiece(const Pieces& plateau, Piece& piece)
    size_t position = plateau.size();
    bool carteOK = false;
    AttachementType rechercher;
-   if(position % 3) // pas la premiere colonne
+   if(position % NB_COL) // pas la premiere colonne
    {
       rechercher = complement(plateau[position-1][DROITE]);
-      for(int i = 0; i < 4; ++i)
+      for(int i = 0; i < NB_FACE; ++i)
       {
          carteOK = rechercher == piece[GAUCHE];
          if(carteOK) break;
@@ -91,13 +153,13 @@ bool testPiece(const Pieces& plateau, Piece& piece)
       }
       if(!carteOK) return false;
    }
-   if(position > 2)
+   if(position >= NB_COL)
    {
       rechercher = complement(plateau[position-3][BAS]);
       if(carteOK) carteOK = rechercher == piece[HAUT];
       else
       {
-         for(int i = 0; i < 4; ++i)
+         for(int i = 0; i < NB_FACE; ++i)
          {
             carteOK = rechercher == piece[HAUT];
             if(carteOK) break;
@@ -109,6 +171,7 @@ bool testPiece(const Pieces& plateau, Piece& piece)
    return carteOK;
 
 }
+
 AttachementType complement(AttachementType a)
 {
    if(a%2) return (AttachementType) ((int) a - 1);
@@ -129,6 +192,7 @@ void rotation(Piece& a)
    a[2] = a[1];
    a[1] = tmp;
 }
+
 bool operator ==(const Piece& lhs, const Piece& rhs)
 {
    return (lhs[0] == rhs[0] and lhs[1] == rhs[1] and lhs[2] == rhs[2] and lhs[3] == rhs[3])
@@ -148,26 +212,14 @@ ostream& operator <<(ostream& os, const Pieces& rhs)
    }
    return os ;
 }
+
 ostream& operator <<(ostream& os, const Piece& rhs)
 {
-
-#if DETAILS
-   bool frst = true;
-   os << '{';
-   for(size_t i = 0; i < 4; ++i)
-   {
-      if(frst) frst = false;
-      else os << ' ';
-      os << rhs[i];
-   }
-   os << '}';
-#endif
-   
    for(size_t i = 0; i < PIECES.size(); ++i)
    {
       if(PIECES[i] == rhs)
       {
-         for(size_t j = 0; j < 4; ++j)
+         for(size_t j = 0; j < NB_FACE; ++j)
          {
             if(rhs[j] == PIECES[i][0])
                switch(j)
@@ -182,19 +234,5 @@ ostream& operator <<(ostream& os, const Piece& rhs)
    }
    return os;
 }
-ostream& operator <<(ostream& os, AttachementType rhs)
-{
-   switch(rhs) {
-      case FILLE_HAUT: return os << "F↑";
-      case FILLE_BAS: return os << "F↓";
-      case DAME_HAUT: return os << "D↑";
-      case DAME_BAS: return os << "D↓";
-      case ARROSOIR_GAUCHE: return os << "A←";
-      case ARROSOIR_DROIT: return os << "A→";
-      case GATEAU_GAUCHE: return os << "G←";
-      case GATEAU_DROIT: return os << "G→";
-      case ARROSOIR_INVERSE: return os << "Ai";
-      case NONE: return os << "Nø";
-   }
-   return os << "¿?";
-}
+
+
