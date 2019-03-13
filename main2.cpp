@@ -15,11 +15,14 @@ using namespace std;
 ostream& operator <<(ostream& os, AttachementType rhs);
 ostream& operator <<(ostream& os, const Piece& rhs);
 ostream& operator <<(ostream& os, const Pieces& rhs);
+
 bool operator ==(const Piece& lhs, const Piece& rhs);
+
 void rotation(Piece& a);
+
 void resolve(Pieces plateau, Pieces jeux);
 void remove(Pieces& jeux, const Piece& piece);
-void remove(Pieces& jeux, const Piece& piece);
+
 bool testPiece(const Pieces& plateau, Piece& piece);
 AttachementType complement(AttachementType a);
 
@@ -43,26 +46,26 @@ int main() {
 
 }
 
-void resolve(Pieces plateau, Pieces jeux)
+void resolve(Pieces plateau, Pieces deck)
 {
    //cout << plateau << endl;
-   if(jeux.size() == 1)
+   if(deck.size() == 1)
    {
-      if(testPiece(plateau, jeux.front()))
+      if(testPiece(plateau, deck.front()))
       {
-         plateau.push_back(jeux.front());
+         plateau.push_back(deck.front());
          cout << plateau << endl;
       }
       return;
    }
 
-   for(Piece piece: jeux)
+   for(Piece piece: deck)
    {
       if(testPiece(plateau, piece))
       {
          plateau.push_back(piece);
 
-         Pieces nouveauJeux(jeux);
+         Pieces nouveauJeux(deck);
          remove(nouveauJeux, piece);
 
          resolve(plateau, nouveauJeux);
@@ -70,8 +73,6 @@ void resolve(Pieces plateau, Pieces jeux)
          plateau.pop_back();
       }
    }
-
-   
 }
 
 bool testPiece(const Pieces& plateau, Piece& piece)
@@ -110,8 +111,6 @@ bool testPiece(const Pieces& plateau, Piece& piece)
 }
 AttachementType complement(AttachementType a)
 {
-   if(a == IMPOSSIBLE) return a;
-
    if(a%2) return (AttachementType) ((int) a - 1);
    else return (AttachementType) ((int) a + 1);
 }
@@ -141,17 +140,17 @@ bool operator ==(const Piece& lhs, const Piece& rhs)
 ostream& operator <<(ostream& os, const Pieces& rhs)
 {
    bool frst = true;
-   os << '[';
    for(const Piece& i : rhs)
    {
       if(frst) frst = false;
       else os << ' ';
       os << i;
    }
-   return os << ']';
+   return os ;
 }
 ostream& operator <<(ostream& os, const Piece& rhs)
 {
+
 #if DETAILS
    bool frst = true;
    os << '{';
@@ -196,7 +195,6 @@ ostream& operator <<(ostream& os, AttachementType rhs)
       case GATEAU_DROIT: return os << "G→";
       case ARROSOIR_INVERSE: return os << "Ai";
       case NONE: return os << "Nø";
-      case IMPOSSIBLE: return os << "IM";
    }
    return os << "¿?";
 }
