@@ -97,8 +97,10 @@ int main() {
    {
       Pieces deck(PIECES);
       remove(deck, piece);
-      for(int i = 0; i < NB_FACE; ++i)
+      for(int i = 0; i < NB_FACE; ++i) 
       {
+         // Pour chaque orientation de chaque pièce, on la place en 
+         // premiere position
          plateau = {piece};
          resolve(plateau, deck);
          rotation(piece);
@@ -123,7 +125,9 @@ void resolve(Pieces& plateau, Pieces deck)
    for(Piece piece: deck)
    {
       if(testPiece(plateau, piece)) 
-      { // si la pièce rentre sur le plateau, elle est tournée correctement par testPiece.
+      { 
+         // si la pièce rentre sur le plateau, elle est
+         // tournée correctement par testPiece.
 
          plateau.push_back(piece);
 
@@ -153,7 +157,7 @@ bool testPiece(const Pieces& plateau, Piece& piece)
       }
       if(!carteOK) return false;
    }
-   if(position >= NB_COL)
+   if(position >= NB_COL) // pas la premiere ligne
    {
       rechercher = complement(plateau[position-3][BAS]);
       if(carteOK) carteOK = rechercher == piece[HAUT];
