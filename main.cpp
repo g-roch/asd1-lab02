@@ -1,6 +1,8 @@
 /**
  * @file main.cpp
  * @brief LABO 2: PUZZLE IMPOSSIBLE
+ *
+ * GROUPE: ASD1_B_A
  * 
  * Résoudre le jeu puzzle impossible
  *
